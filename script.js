@@ -1,19 +1,22 @@
-// ==========================================
-// Manthong Core Logic v9.1 - Cloud Sync Fixed
-// ==========================================
-
-// 1. GitHub 全局配置
+// 1. 安全配置：不再直接写 Token
 const GITHUB_CONFIG = {
-    // 优先从浏览器存储拿，没有就用默认的
-    TOKEN: localStorage.getItem('GH_TOKEN'),
+    // 关键：从本地浏览器存储读取，不再硬编码在 JS 文件里
+    TOKEN: localStorage.getItem('MANTHONG_TOKEN'), 
     OWNER: 'zay217',
-    REPO: 'manthong-system', // 确保这里和你的 GitHub 仓库名完全一样
+    REPO: 'manthong-group', // 确认你的仓库名是 group 还是 system
     PATH: 'data.json'
 };
 
-// 2. 统一 API 地址
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
+// 在 fetch 和 save 函数里，如果发现没有 TOKEN，提醒用户
+function checkToken() {
+    if (!GITHUB_CONFIG.TOKEN) {
+        alert("请先设置安全访问密钥 (Token)");
+        return false;
+    }
+    return true;
+}
 // 3. 核心：从 GitHub 获取数据
 async function fetchFromCloud() {
     try {
@@ -208,3 +211,4 @@ window.exportDatabase = () => {
     a.download = `Manthong_Fleet_Backup.json`;
     a.click();
 };
+
