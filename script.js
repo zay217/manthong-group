@@ -1,13 +1,11 @@
-// 1. GitHub 全局配置 (严格检查大小写)
+// 确保这一段在 script.js 的最最最顶部！
 const GITHUB_CONFIG = {
-    // 这里用大写的 TOKEN
     TOKEN: localStorage.getItem('MANTHONG_TOKEN'), 
     OWNER: 'zay217',
-    REPO: 'manthong-group', // 确认是 group
+    REPO: 'manthong-group', 
     PATH: 'data.json'
 };
 
-// 2. 这里的变量名也要对应
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
 // 3. 在 fetch 函数里修正 (注意把 .token 改成 .TOKEN)
@@ -87,4 +85,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ... 其余渲染逻辑 (renderUserInventory, renderAdminInventory, addNewCar 等) 保持不变 ...
+
 
