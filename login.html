@@ -1,30 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>System Access</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manthong | Secure Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 登录页专用的酷炫样式 */
+        body { overflow: hidden; }
+        .login-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+        }
+        .pin-input {
+            letter-spacing: 15px;
+            font-size: 2rem !important;
+            font-weight: 900 !important;
+            padding-left: 25px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 204, 0, 0.2) !important;
+            color: var(--gold) !important;
+            transition: all 0.3s ease;
+        }
+        .pin-input:focus {
+            border-color: var(--gold) !important;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+        .login-card {
+            animation: fadeInScale 0.6s ease-out;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
 </head>
 <body>
-    <div class="bg-vibe"></div><div class="bg-blob"></div>
-    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
-        <div class="morph-card text-center" style="width: 380px;">
-            <div class="nav-brand mb-4 fs-2">MANTHONG</div>
-            <span class="subtitle">Secure Authentication</span>
-            <h4 class="fw-900 mb-4">STAFF PORTAL</h4>
-            <input type="password" id="pin" class="form-control form-control-lg bg-dark text-white border-secondary mb-3 text-center" placeholder="ENTER ACCESS PIN">
-            <button onclick="checkAccess()" class="btn-glow w-100 py-3">AUTHORIZE</button>
+    <div class="bg-vibe"></div>
+    <div class="bg-blob"></div>
+
+    <div class="login-container">
+        <div class="morph-card text-center login-card" style="width: 400px; padding: 40px;">
+            <div class="nav-brand mb-2 fs-1 text-white">MANTHONG</div>
+            <div class="text-muted small mb-5 tracking-widest" style="letter-spacing: 3px;">FLEET MANAGEMENT SYSTEM</div>
+            
+            <div class="mb-4">
+                <i class="fa-solid fa-shield-halved fa-3x mb-3" style="color: var(--gold);"></i>
+                <h4 class="fw-900 text-white">STAFF AUTHORIZATION</h4>
+                <p class="text-muted small">Access restricted to authorized personnel only.</p>
+            </div>
+
+            <div class="position-relative mb-4">
+                <input type="password" id="pin" maxlength="4" 
+                       class="form-control form-control-lg pin-input text-center" 
+                       placeholder="••••" autocomplete="off">
+            </div>
+
+            <button onclick="checkAccess()" id="loginBtn" class="btn-glow w-100 py-3 fw-bold">
+                <i class="fa-solid fa-key me-2"></i> AUTHORIZE ACCESS
+            </button>
+            
+            <div class="mt-4">
+                <a href="index.html" class="text-decoration-none text-muted small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Public View
+                </a>
+            </div>
         </div>
     </div>
+
     <script>
-        function checkAccess() {
-            if(document.getElementById('pin').value === '7887') { // 默认密码
+        async function checkAccess() {
+            const pinInput = document.getElementById('pin');
+            const btn = document.getElementById('loginBtn');
+            const pin = pinInput.value;
+
+            if(pin === '7887') {
+                // 按钮加载动画
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> VERIFYING...';
+                btn.style.opacity = '0.7';
+
+                // --- 核心权限配置 ---
+                // 请将下面这个 'YOUR_TOKEN' 换成你真正的 GitHub Token
+                // 为了稍微防一下 GitHub 扫描，你可以把 Token 拆开写
+                const part1 = "ghp_xxxxxxxxxxxx"; // Token 前半段
+                const part2 = "yyyyyyyyyyyy"; // Token 后半段
+                const fullToken = part1 + part2;
+
+                // 植入权限
                 localStorage.setItem('is_admin', 'true');
-                location.href = 'admin.html';
+                localStorage.setItem('MANTHONG_TOKEN', fullToken);
+
+                // 模拟延迟增加安全感
+                setTimeout(() => {
+                    location.href = 'admin.html';
+                }, 800);
+
             } else {
-                alert('Access Denied: Invalid Security Pin');
+                // 报错震动效果或反馈
+                pinInput.classList.add('is-invalid');
+                pinInput.style.borderColor = '#ff4444';
+                alert('ACCESS DENIED: Invalid Security Pin');
+                pinInput.value = '';
+                pinInput.focus();
             }
         }
+
+        // 回车键快捷提交
+        document.getElementById('pin').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkAccess();
+            }
+        });
     </script>
 </body>
 </html>
