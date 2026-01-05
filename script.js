@@ -1,6 +1,5 @@
 /**
- * MANTHONG FLEET SYSTEM - CORE SCRIPT
- * 修正版：移除导致 CORS 报错的 Cache-Control
+ * MANTHONG FLEET SYSTEM - CORE SCRIPT (V3 - 全员同步版)
  */
 
 // --- [1] 基础配置 ---
@@ -11,52 +10,55 @@ const GITHUB_CONFIG = {
     PATH: 'data.json'
 };
 
+// 写入用 API URL
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
+// 读取用 RAW URL (无需 Token 即可读取公开仓库)
+const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/main/${GITHUB_CONFIG.PATH}`;
 
 // --- [2] 云端同步逻辑 ---
 
 async function fetchFromCloud() {
-    if (!GITHUB_CONFIG.TOKEN) {
-        console.warn("No Token found. Operating in local mode.");
-        return JSON.parse(localStorage.getItem('cars')) || [];
-    }
     try {
-        const response = await fetch(API_URL, {
-            // ✅ 修正：移除了 'Cache-Control'，只保留 Authorization
-            headers: { 
-                'Authorization': `token ${GITHUB_CONFIG.TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
+        // ✅ 优化：无论有没有 Token，所有人都通过 RAW 链接抓取最新数据
+        // 加上时间戳 ?t= 防止手机浏览器缓存旧数据
+        const response = await fetch(`${RAW_URL}?t=${Date.now()}`);
         
-        if (!response.ok) throw new Error("Cloud file not found");
+        if (!response.ok) throw new Error("Cloud file sync failed");
         
-        const data = await response.json();
-        localStorage.setItem('gh_sha', data.sha); 
+        const cars = await response.json();
         
-        // 解析 Base64 内容
-        const content = decodeURIComponent(escape(atob(data.content)));
-        const cars = JSON.parse(content);
-        
+        // 更新本地缓存
         localStorage.setItem('cars', JSON.stringify(cars));
+        console.log("Inventory Synced from Cloud");
+
+        // ✅ 如果是管理员，额外去拿一次 SHA，否则无法写入
+        if (GITHUB_CONFIG.TOKEN) {
+            const apiRes = await fetch(API_URL, {
+                headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+            });
+            const apiData = await apiRes.json();
+            localStorage.setItem('gh_sha', apiData.sha);
+        }
+        
         return cars;
     } catch (error) {
-        console.error("Fetch Error:", error);
+        console.error("Sync Error, using local data:", error);
         return JSON.parse(localStorage.getItem('cars')) || [];
     }
 }
 
 async function saveToCloud(carsArray) {
     if (!GITHUB_CONFIG.TOKEN) {
-        alert("错误：未检测到 Token，请在控制台设置！");
+        alert("Action Denied: No Admin Token found.");
         return false;
     }
 
     const sha = localStorage.getItem('gh_sha');
+    // 处理中文/特殊字符的 Base64 编码
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(carsArray, null, 2))));
 
     const body = {
-        message: `Inventory update: ${new Date().toLocaleString()}`,
+        message: `Inventory Update: ${new Date().toLocaleString()}`,
         content: content,
         sha: sha 
     };
@@ -74,11 +76,10 @@ async function saveToCloud(carsArray) {
         if (response.ok) {
             const result = await response.json();
             localStorage.setItem('gh_sha', result.content.sha); 
-            console.log("Cloud Sync Success!");
             return true;
         } else {
             const err = await response.json();
-            alert("Sync Failed: " + err.message);
+            alert("Cloud Save Failed: " + err.message);
             return false;
         }
     } catch (error) {
@@ -94,7 +95,6 @@ function renderUserInventory(branch) {
     const container = document.getElementById('car-list');
     if (!container) return;
 
-    // 统一转小写对比，防止因为大小写导致查不到车
     const filtered = cars.filter(c => c.branch.toLowerCase() === branch.toLowerCase());
 
     if (filtered.length === 0) {
@@ -103,17 +103,17 @@ function renderUserInventory(branch) {
     }
 
     container.innerHTML = filtered.map(car => `
-        <div class="col-md-4">
+        <div class="col-md-4 mb-4">
             <div class="morph-card">
                 <div class="position-relative mb-3">
-                    <img src="${car.image}" class="img-fluid rounded" style="height:200px; width:100%; object-fit:cover; border:1px solid rgba(255,255,255,0.1)">
+                    <img src="${car.image || 'https://via.placeholder.com/400x250'}" class="img-fluid rounded" style="height:200px; width:100%; object-fit:cover; border:1px solid rgba(255,255,255,0.1)">
                     <div class="status-badge" style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.8); border:1px solid #FFCC00; padding:2px 10px; font-size:0.7rem; color:white; font-weight:bold;">
-                        ${car.status.toUpperCase()}
+                        ${(car.status || 'Ready').toUpperCase()}
                     </div>
                 </div>
                 <h4 class="mb-1 text-white">${car.brand} ${car.model}</h4>
                 <p class="text-muted small">${car.year} | ${car.plate}</p>
-                <div class="price-tag h3 fw-900" style="color:#FFCC00">RM ${parseFloat(car.price).toLocaleString()}</div>
+                <div class="price-tag h3 fw-900" style="color:#FFCC00">RM ${parseFloat(car.price || 0).toLocaleString()}</div>
                 <a href="calculator.html?price=${car.price}" class="btn-glow w-100 d-block text-center text-decoration-none mt-3">LOAN CALCULATOR</a>
             </div>
         </div>
@@ -125,7 +125,7 @@ function renderAdminInventory() {
     const tbody = document.getElementById('inventory-table');
     if (!tbody) return;
     
-    tbody.innerHTML = cars.map(car => `
+    tbody.innerHTML = cars.map((car, index) => `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">
             <td class="py-3">
                 <strong>${car.brand} ${car.model}</strong><br>
@@ -133,14 +133,15 @@ function renderAdminInventory() {
             </td>
             <td>${car.branch}</td>
             <td>
-                <select onchange="updateStatus(${car.id}, this.value)" class="form-select form-select-sm">
+                <select onchange="updateStatusByIndex(${index}, this.value)" class="form-select form-select-sm bg-dark text-white border-secondary">
                     <option value="Ready" ${car.status === 'Ready' ? 'selected' : ''}>Ready</option>
                     <option value="Preparing" ${car.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
                     <option value="Pending" ${car.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="Sold" ${car.status === 'Sold' ? 'selected' : ''}>Sold</option>
                 </select>
             </td>
             <td>
-                <button onclick="deleteCar(${car.id})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                <button onclick="deleteCarByIndex(${index})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
             </td>
         </tr>
     `).join('');
@@ -154,28 +155,30 @@ window.addNewCar = async (event) => {
     btn.disabled = true;
     btn.innerText = "PUSHING TO CLOUD...";
 
-    const cars = JSON.parse(localStorage.getItem('cars')) || [];
+    let cars = JSON.parse(localStorage.getItem('cars')) || [];
     const newCar = {
-        id: Date.now(),
+        id: Date.now(), // 使用时间戳作为唯一ID
         brand: document.getElementById('brand').value,
         model: document.getElementById('model').value,
         year: document.getElementById('year').value,
         spec: document.getElementById('spec').value || '',
         colour: document.getElementById('colour').value || '',
         plate: document.getElementById('plate').value || '',
-        price: parseInt(document.getElementById('price').value),
+        price: parseInt(document.getElementById('price').value) || 0,
         processing_fee: parseInt(document.getElementById('processing_fee').value || 0),
         branch: document.getElementById('branch').value,
         status: document.getElementById('status').value,
-        image: document.getElementById('image').value || 'https://via.placeholder.com/400x250'
+        image: document.getElementById('image').value || ''
     };
     
-    cars.push(newCar);
+    // 新车插到最前面
+    cars.unshift(newCar);
+    
     const success = await saveToCloud(cars);
     
     if (success) {
         localStorage.setItem('cars', JSON.stringify(cars));
-        alert('Vehicle Added Successfully!');
+        alert('Success: Inventory Updated for all branches!');
         location.reload();
     } else {
         btn.disabled = false;
@@ -183,17 +186,20 @@ window.addNewCar = async (event) => {
     }
 };
 
-window.updateStatus = async (id, newStatus) => {
+window.updateStatusByIndex = async (index, newStatus) => {
     let cars = JSON.parse(localStorage.getItem('cars'));
-    cars = cars.map(c => c.id === id ? {...c, status: newStatus} : c);
+    cars[index].status = newStatus;
     const success = await saveToCloud(cars);
-    if (success) localStorage.setItem('cars', JSON.stringify(cars));
+    if (success) {
+        localStorage.setItem('cars', JSON.stringify(cars));
+        console.log("Status updated!");
+    }
 };
 
-window.deleteCar = async (id) => {
-    if(confirm('Delete this car?')) {
+window.deleteCarByIndex = async (index) => {
+    if(confirm('Delete this vehicle from global database?')) {
         let cars = JSON.parse(localStorage.getItem('cars'));
-        cars = cars.filter(c => c.id !== id);
+        cars.splice(index, 1);
         const success = await saveToCloud(cars);
         if (success) {
             localStorage.setItem('cars', JSON.stringify(cars));
@@ -202,25 +208,14 @@ window.deleteCar = async (id) => {
     }
 };
 
-window.exportDatabase = () => {
-    const data = localStorage.getItem('cars');
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `Manthong_Backup_${new Date().toLocaleDateString()}.json`;
-    a.click();
-};
-
-// --- [5] 启动引擎 ---
+// --- [5] 启动 ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. 先拉取数据
+    // 强制先同步云端
     await fetchFromCloud();
 
-    // 2. 识别页面
     const pageType = document.body.getAttribute('data-page');
     const branchType = document.body.getAttribute('data-branch');
 
-    // 3. 执行渲染
     if (pageType === 'inventory-view' && branchType) {
         renderUserInventory(branchType);
     } else if (pageType === 'admin-manage') {
