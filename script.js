@@ -1,8 +1,8 @@
-// 1. 统一使用 GITHUB_CONFIG 这个名字
+// 1. GitHub 全局配置 (统一变量名为 GITHUB_CONFIG)
 const GITHUB_CONFIG = {
-    TOKEN: localStorage.getItem('GH_TOKEN'),
+    TOKEN: localStorage.getItem('GH_TOKEN'),// 如果localStorage没有，就用你给我的这个
     OWNER: 'zay217',
-    REPO: 'manthong-system',
+    REPO: 'manthong-group',
     PATH: 'data.json'
 };
 
@@ -201,3 +201,4 @@ window.exportDatabase = () => {
     a.click();
 
 };
+
