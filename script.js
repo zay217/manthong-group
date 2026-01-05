@@ -1,12 +1,13 @@
-// GitHub 全局配置
-const MANTHONG_CONFIG = {
-    TOKEN: localStorage.getItem('GH_TOKEN') || '',
+// 1. 统一使用 GITHUB_CONFIG 这个名字
+const GITHUB_CONFIG = {
+    TOKEN: localStorage.getItem('GH_TOKEN'),
+    OWNER: 'zay217',
     REPO: 'manthong-system',
-    OWNER: 'twzhe0623-cell',
     PATH: 'data.json'
 };
 
-const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+// 2. 这里的变量名必须引用上面定义的 GITHUB_CONFIG
+const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
 // 2. 核心：从 GitHub 获取数据
 async function fetchFromCloud() {
@@ -198,4 +199,5 @@ window.exportDatabase = () => {
     a.href = url;
     a.download = `Manthong_Fleet_Backup.json`;
     a.click();
+
 };
