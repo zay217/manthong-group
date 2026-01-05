@@ -1,6 +1,6 @@
 /**
  * MANTHONG FLEET SYSTEM - CORE SCRIPT
- * 优化版：解决函数定义顺序 & 增强安全性
+ * 修正版：移除导致 CORS 报错的 Cache-Control
  */
 
 // --- [1] 基础配置 ---
@@ -13,7 +13,7 @@ const GITHUB_CONFIG = {
 
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
-// --- [2] 云端同步逻辑 (Functions) ---
+// --- [2] 云端同步逻辑 ---
 
 async function fetchFromCloud() {
     if (!GITHUB_CONFIG.TOKEN) {
@@ -22,13 +22,19 @@ async function fetchFromCloud() {
     }
     try {
         const response = await fetch(API_URL, {
-            headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}`, 'Cache-Control': 'no-cache' }
+            // ✅ 修正：移除了 'Cache-Control'，只保留 Authorization
+            headers: { 
+                'Authorization': `token ${GITHUB_CONFIG.TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
         });
+        
         if (!response.ok) throw new Error("Cloud file not found");
         
         const data = await response.json();
-        localStorage.setItem('gh_sha', data.sha); // 必须保存 SHA 才能更新
+        localStorage.setItem('gh_sha', data.sha); 
         
+        // 解析 Base64 内容
         const content = decodeURIComponent(escape(atob(data.content)));
         const cars = JSON.parse(content);
         
@@ -67,7 +73,7 @@ async function saveToCloud(carsArray) {
         
         if (response.ok) {
             const result = await response.json();
-            localStorage.setItem('gh_sha', result.content.sha); // 更新 SHA 防止下一次保存冲突
+            localStorage.setItem('gh_sha', result.content.sha); 
             console.log("Cloud Sync Success!");
             return true;
         } else {
@@ -88,6 +94,7 @@ function renderUserInventory(branch) {
     const container = document.getElementById('car-list');
     if (!container) return;
 
+    // 统一转小写对比，防止因为大小写导致查不到车
     const filtered = cars.filter(c => c.branch.toLowerCase() === branch.toLowerCase());
 
     if (filtered.length === 0) {
@@ -153,9 +160,9 @@ window.addNewCar = async (event) => {
         brand: document.getElementById('brand').value,
         model: document.getElementById('model').value,
         year: document.getElementById('year').value,
-        spec: document.getElementById('spec').value,
-        colour: document.getElementById('colour').value,
-        plate: document.getElementById('plate').value,
+        spec: document.getElementById('spec').value || '',
+        colour: document.getElementById('colour').value || '',
+        plate: document.getElementById('plate').value || '',
         price: parseInt(document.getElementById('price').value),
         processing_fee: parseInt(document.getElementById('processing_fee').value || 0),
         branch: document.getElementById('branch').value,
@@ -206,14 +213,14 @@ window.exportDatabase = () => {
 
 // --- [5] 启动引擎 ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. 先从云端拉取最新数据
+    // 1. 先拉取数据
     await fetchFromCloud();
 
-    // 2. 识别当前页面身份
+    // 2. 识别页面
     const pageType = document.body.getAttribute('data-page');
     const branchType = document.body.getAttribute('data-branch');
 
-    // 3. 执行对应的渲染
+    // 3. 执行渲染
     if (pageType === 'inventory-view' && branchType) {
         renderUserInventory(branchType);
     } else if (pageType === 'admin-manage') {
