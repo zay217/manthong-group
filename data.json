@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": 1767604088338,
+    "brand": "PROTON",
+    "model": "X70",
+    "year": "2020",
+    "spec": "1.8 PREMIUM",
+    "colour": "SILVER",
+    "plate": "VDB7826",
+    "price": 58800,
+    "processing_fee": 3800,
+    "branch": "Manthong",
+    "status": "Ready",
+    "image": "https://via.placeholder.com/400x250"
+  }
+]
