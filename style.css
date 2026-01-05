@@ -1,0 +1,326 @@
+/* ============================================================
+   MANTHONG LUXURY GROUP - EXECUTIVE DESIGN SYSTEM v7.0
+   Design: Noir & Gold Minimalist (Corporate Excellence)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@300;400;600;800&display=swap');
+
+:root {
+    /* 1. 让金色更亮、更显眼 */
+    --gold: #ffcc00; 
+    --gold-light: #fff3af;
+    --gold-dark: #b45309;
+    
+    /* 2. 让背景变深（纯深色），这样白色字才看得清 */
+    --glass: rgba(10, 10, 10, 0.9); /* 调高透明度，背景更黑 */
+    --glass-bright: rgba(255, 255, 255, 0.15);
+    
+    /* 3. 让文字颜色对比度最高 */
+    --text-primary: #ffffff;    /* 纯白，最清晰 */
+    --text-secondary: #cbd5e1;  /* 浅灰白，不再是暗灰色 */
+    
+    /* 4. 边框线稍微调亮一点，方便区分格子 */
+    --border-dim: rgba(255, 255, 255, 0.15);
+}
+
+/* 强制修正：让所有输入框里的字变成黑色或高对比色，防止看不清输入了什么 */
+input.form-control, select.form-select, textarea.form-control {
+    background-color: rgba(255, 255, 255, 0.9) !important; /* 输入框背景变白 */
+    color: #000000 !important; /* 字变黑 */
+    border: 2px solid var(--gold) !important;
+    font-weight: 600;
+}
+
+/* 让占位符（还没写字时的提示）也清楚一点 */
+input::placeholder {
+    color: #666 !important;
+}
+
+/* 让卡片标题和价格更有力 */
+h1, h2, h3, h4, .price-tag {
+    color: var(--white) !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* 给字加个黑影，更立体 */
+}
+
+/* 1. 基础重置 & 全局氛围 */
+body {
+    background-color: var(--deep-black);
+    color: #ffffff;
+    font-family: var(--text-body);
+    margin: 0;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+    /* 背景纹理：微妙的渐变营造空间深度 */
+    background-image: radial-gradient(circle at 50% -20%, #1a1a1c 0%, var(--deep-black) 80%);
+}
+
+.bg-vibe {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, #111112 0%, #050505 100%);
+    z-index: -2;
+}
+
+/* 2. 大企业级窄版 Header */
+.super-nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 75px;
+    background: rgba(5, 5, 5, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 6%;
+    z-index: 1000;
+}
+
+.nav-brand {
+    font-family: var(--text-head);
+    font-size: 1.8rem;
+    color: var(--gold);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.nav-brand:hover {
+    color: var(--gold-bright);
+    text-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+}
+
+.nav-links a {
+    font-family: var(--text-body);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: #888;
+    text-decoration: none;
+    margin-left: 35px;
+    transition: 0.4s;
+    font-weight: 600;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--gold);
+}
+
+/* 3. 高级卡片 & 布局 */
+.morph-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-dim);
+    border-radius: 2px; /* 趋近直角更显硬朗与商务 */
+    padding: 30px;
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    height: 100%;
+}
+
+.morph-card:hover {
+    border-color: var(--gold);
+    background: rgba(25, 25, 27, 0.9);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+/* 标题字体 */
+h1, h2, h3, h4 {
+    font-family: var(--text-head);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.text-gold {
+    color: var(--gold) !important;
+}
+
+/* 4. 奢华金按钮 */
+.btn-glow {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold) !important;
+    font-family: var(--text-body);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 14px 30px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.4s ease;
+    cursor: pointer;
+}
+
+.btn-glow:hover {
+    background: var(--gold);
+    color: #000 !important;
+    box-shadow: 0 0 25px rgba(197, 160, 89, 0.4);
+    transform: scale(1.02);
+}
+
+/* 5. 车辆状态 & 价格 */
+.status-badge {
+    font-family: var(--text-body);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1px solid #444;
+    color: #888;
+    display: inline-block;
+}
+
+.status-in-stock {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.status-sold {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.price-tag {
+    font-family: var(--text-body);
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+/* 6. 表单美化 (Admin & Calculator) */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border-dim) !important;
+    color: #fff !important;
+    border-radius: 0;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+}
+
+.form-control:focus {
+    border-color: var(--gold) !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* 7. 极致奢华页脚 (FOOTER) */
+.luxury-footer {
+    background: #000;
+    padding: 100px 0 40px 0;
+    border-top: 1px solid var(--border-dim);
+    margin-top: 120px;
+}
+
+.footer-logo {
+    font-family: var(--text-head);
+    font-size: 1.6rem;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 4px;
+    font-weight: 700;
+}
+
+.footer-heading {
+    font-family: var(--text-head);
+    color: #fff;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    margin-bottom: 35px;
+    text-transform: uppercase;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li { margin-bottom: 15px; }
+
+.footer-links a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: 0.3s;
+    letter-spacing: 1px;
+}
+
+.footer-links a:hover {
+    color: var(--gold);
+    padding-left: 5px;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border-dim);
+    color: var(--gold);
+    margin-right: 15px;
+    border-radius: 50%;
+    transition: 0.4s;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.social-links a:hover {
+    background: var(--gold);
+    color: #000;
+    transform: translateY(-5px);
+}
+
+.contact-info { list-style: none; padding: 0; }
+.contact-info li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    color: #888;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.contact-info i {
+    color: var(--gold);
+    margin-right: 18px;
+    margin-top: 4px;
+}
+
+.footer-bottom {
+    margin-top: 80px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+    text-align: center;
+}
+
+.footer-bottom p {
+    color: #333;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* 8. 响应式适配 (Mobile Optimization) */
+@media (max-width: 768px) {
+    .super-nav { padding: 0 20px; height: 65px; }
+    .nav-brand { font-size: 1.3rem; letter-spacing: 3px; }
+    .nav-links { display: none; } /* 手机端建议使用汉堡菜单，或精简导航 */
+    
+    .display-1 { font-size: 2.8rem !important; }
+    .luxury-footer { text-align: center; padding: 60px 0 30px 0; }
+    .contact-info li { justify-content: center; }
+}
+/* 强效修复：让所有 muted 文字在深色模式下也能看见 */
+.text-muted {
+    color: #A0A0A0 !important; /* 把它从深灰改成浅灰 */
+}
+
+/* 专门针对你提到的那个小字 */
+.text-md-end .small {
+    color: var(--gold) !important;
+    letter-spacing: 1px;
+}

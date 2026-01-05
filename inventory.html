@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manthong | Fleet Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="admin-manage">
+    <div class="bg-vibe"></div>
+    
+    <nav class="super-nav">
+        <a href="admin.html" class="nav-brand">ADMIN CONTROL</a>
+        <div class="nav-links">
+            <button onclick="exportDatabase()" class="btn btn-outline-warning btn-sm me-2">BACKUP DATA</button>
+            <a href="index.html">LOGOUT</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 120px; padding-bottom: 50px;">
+        <div class="morph-card mb-5">
+            <h2 class="fw-900 mb-4">ADD VEHICLE TOKEN</h2>
+            <form onsubmit="addNewCar(event)" class="row g-3">
+                <div class="col-md-3"><input type="text" id="brand" class="form-control" placeholder="Brand (e.g. Proton)" required></div>
+                <div class="col-md-3"><input type="text" id="model" class="form-control" placeholder="Model (e.g. X70)" required></div>
+                <div class="col-md-2"><input type="number" id="year" class="form-control" placeholder="Year" required></div>
+                <div class="col-md-4"><input type="text" id="spec" class="form-control" placeholder="Spec (e.g. Premium X)"></div>
+                
+                <div class="col-md-3"><input type="text" id="colour" class="form-control" placeholder="Colour"></div>
+                <div class="col-md-3"><input type="text" id="plate" class="form-control" placeholder="Plate No."></div>
+                <div class="col-md-3"><input type="number" id="price" class="form-control" placeholder="Price (RM)" required></div>
+                <div class="col-md-3"><input type="number" id="processing_fee" class="form-control" placeholder="Proc. Fee (RM)"></div>
+                
+                <div class="col-md-4">
+                    <select id="branch" class="form-select">
+                        <option value="Manthong">Manthong</option>
+                        <option value="Ever Forward">Ever Forward</option>
+                        <option value="TS Car">TS Car</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="status" class="form-select">
+                        <option value="Ready">Ready</option>
+                        <option value="Preparing">Preparing</option>
+                        <option value="Pending">Pending (还没拿)</option>
+                    </select>
+                </div>
+                <div class="col-md-4"><input type="text" id="image" class="form-control" placeholder="Image URL"></div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn-glow w-100 py-3">PUSH TO DATABASE</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="morph-card">
+            <h2 class="fw-900 mb-4">LIVE INVENTORY</h2>
+            <div class="table-responsive">
+                <table class="table text-white">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Branch</th>
+                            <th>Status Control</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

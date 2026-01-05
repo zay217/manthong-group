@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ever Forward | Manthong Group Luxury Fleet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="inventory-view" data-branch="everforward">
+    <div class="bg-vibe"></div>
+    
+    <nav class="super-nav">
+        <a href="index.html" class="nav-brand">Ever Forward Auto Trading</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="manthong.html"style="color: #FFCC00; text-decoration: none; font-weight: bold;">ManThong</a>
+            <a href="tscar.html"style="color: #FFCC00; text-decoration: none; font-weight: bold;">TsCar</a>
+            <a href="calculator.html">Calculator</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 150px;">
+        <div class="row mb-5 align-items-end">
+            <div class="col-md-8">
+                <p class="text-uppercase text-muted mb-2" style="letter-spacing: 4px; font-size: 0.7rem;">Official Inventory</p>
+                <h2 class="display-4 mb-0" style="font-family: 'Cormorant Garamond', serif;">
+                    <span id="ever forward">EVER FORWARD</span> <span style="color:var(--gold);">COLLECTION</span>
+                </h2>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div style="height: 1px; background: var(--border-dim); width: 100%; margin-bottom: 15px;"></div>
+                <p class="text-muted small">Updated Real-time from Zay</p>
+            </div>
+        </div>
+
+        <div id="car-list" class="row g-4">
+            </div>
+    </div>
+
+    <div style="height: 100px;"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // 自动根据 body 的 data-branch 更新页面上的标题文字
+        document.getElementById('display-branch-name').innerText = document.body.getAttribute('data-branch').toUpperCase();
+    </script>
+</body>
+</html>
