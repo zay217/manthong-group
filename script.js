@@ -1,53 +1,64 @@
-// 1. GitHub 全局配置 (统一变量名为 GITHUB_CONFIG)
+// ==========================================
+// Manthong Core Logic v9.1 - Cloud Sync Fixed
+// ==========================================
+
+// 1. GitHub 全局配置
 const GITHUB_CONFIG = {
-    TOKEN: localStorage.getItem('GH_TOKEN'),// 如果localStorage没有，就用你给我的这个
+    // 优先从浏览器存储拿，没有就用默认的
+    TOKEN: localStorage.getItem('GH_TOKEN'),
     OWNER: 'zay217',
-    REPO: 'manthong-group',
+    REPO: 'manthong-system', // 确保这里和你的 GitHub 仓库名完全一样
     PATH: 'data.json'
 };
 
-// 2. 这里的变量名必须引用上面定义的 GITHUB_CONFIG
+// 2. 统一 API 地址
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
-// 2. 核心：从 GitHub 获取数据
+// 3. 核心：从 GitHub 获取数据
 async function fetchFromCloud() {
     try {
         const response = await fetch(API_URL, {
-            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+            // 注意：这里必须用 GITHUB_CONFIG.TOKEN (全大写)
+            headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
         });
+        
         if (!response.ok) throw new Error("Cloud file not found");
         
         const data = await response.json();
-        // 保存 SHA 用于下次更新，解码 Base64 内容
+        // 保存指纹 SHA 用于下次更新
         localStorage.setItem('gh_sha', data.sha);
+        
+        // 解码内容 (处理中文/特殊字符)
         const content = decodeURIComponent(escape(atob(data.content)));
         const cars = JSON.parse(content);
         
-        // 同时更新本地缓存，确保离线也能看
+        // 更新本地备份
         localStorage.setItem('cars', JSON.stringify(cars));
         return cars;
     } catch (error) {
         console.error("Fetch Error:", error);
+        // 如果云端失败，尝试用本地旧数据
         return JSON.parse(localStorage.getItem('cars')) || [];
     }
 }
 
-// 3. 核心：上传数据到 GitHub
+// 4. 核心：上传数据到 GitHub
 async function saveToCloud(carsArray) {
     const sha = localStorage.getItem('gh_sha');
+    // 把 JSON 转成 Base64 编码
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(carsArray, null, 2))));
 
     const body = {
         message: `Inventory update: ${new Date().toLocaleString()}`,
         content: content,
-        sha: sha // 覆盖旧文件必须提供 SHA
+        sha: sha 
     };
 
     try {
         const response = await fetch(API_URL, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Authorization': `token ${GITHUB_CONFIG.TOKEN}`, // 注意：TOKEN 大写
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
@@ -55,7 +66,8 @@ async function saveToCloud(carsArray) {
         
         if (response.ok) {
             const result = await response.json();
-            localStorage.setItem('gh_sha', result.content.sha); // 更新 SHA
+            // 保存新的 SHA 指纹
+            localStorage.setItem('gh_sha', result.content.sha);
             console.log("Cloud Sync Success!");
         } else {
             const err = await response.json();
@@ -66,10 +78,10 @@ async function saveToCloud(carsArray) {
     }
 }
 
-// 4. 初始化页面
+// 5. 初始化页面
 document.addEventListener('DOMContentLoaded', async () => {
-    // 每次打开页面先同步最新云端数据
-    const cars = await fetchFromCloud();
+    // 强制先从云端拉取最新数据
+    await fetchFromCloud();
 
     const pageType = document.body.getAttribute('data-page');
     const branchType = document.body.getAttribute('data-branch');
@@ -81,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// 5. [展示层] 渲染 (保留你本来的逻辑)
+// [展示层] 渲染给客户看的分行页面
 function renderUserInventory(branch) {
     const cars = JSON.parse(localStorage.getItem('cars')) || [];
     const container = document.getElementById('car-list');
@@ -97,10 +109,10 @@ function renderUserInventory(branch) {
             <div class="morph-card">
                 <div class="position-relative mb-3">
                     <img src="${car.image}" class="img-fluid rounded" style="height:200px; width:100%; object-fit:cover; border:1px solid rgba(255,255,255,0.1)">
-                    <div class="status-badge status-${car.status.toLowerCase()}" style="position:absolute; top:10px; left:10px; padding:2px 10px; font-size:0.7rem; font-weight:bold; border-radius:4px;">
+                    <div class="status-badge" style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.8); border:1px solid var(--gold); padding:2px 10px; font-size:0.7rem; color:white; font-weight:bold;">
                         ${car.status.toUpperCase()}
                     </div>
-                    <div class="plate-tag" style="position:absolute; bottom:10px; right:10px; background:#000; color:#fff; padding:2px 8px; font-size:0.8rem; border:1px solid #444;">
+                    <div style="position:absolute; bottom:10px; right:10px; background:#000; color:#fff; padding:2px 8px; font-size:0.8rem; border:1px solid #444;">
                         ${car.plate}
                     </div>
                 </div>
@@ -114,7 +126,7 @@ function renderUserInventory(branch) {
     `).join('');
 }
 
-// 6. [管理层] 渲染后台 (保留你本来的逻辑)
+// [管理层] 渲染后台表格
 function renderAdminInventory() {
     const cars = JSON.parse(localStorage.getItem('cars')) || [];
     const tbody = document.getElementById('inventory-table');
@@ -140,7 +152,7 @@ function renderAdminInventory() {
     `).join('');
 }
 
-// 7. [功能层] 核心操作 + 云端同步
+// [功能层] 操作函数
 window.addNewCar = async (event) => {
     event.preventDefault();
     const cars = JSON.parse(localStorage.getItem('cars')) || [];
@@ -162,7 +174,6 @@ window.addNewCar = async (event) => {
     cars.push(newCar);
     localStorage.setItem('cars', JSON.stringify(cars));
     
-    // 同步到云端
     await saveToCloud(cars);
     
     alert('Vehicle Added & Cloud Synced!');
@@ -174,9 +185,7 @@ window.updateStatus = async (id, newStatus) => {
     cars = cars.map(c => c.id === id ? {...c, status: newStatus} : c);
     localStorage.setItem('cars', JSON.stringify(cars));
     
-    // 同步到云端
     await saveToCloud(cars);
-    console.log("Status updated on cloud");
 };
 
 window.deleteCar = async (id) => {
@@ -185,7 +194,6 @@ window.deleteCar = async (id) => {
         cars = cars.filter(c => c.id !== id);
         localStorage.setItem('cars', JSON.stringify(cars));
         
-        // 同步到云端
         await saveToCloud(cars);
         renderAdminInventory();
     }
@@ -199,6 +207,4 @@ window.exportDatabase = () => {
     a.href = url;
     a.download = `Manthong_Fleet_Backup.json`;
     a.click();
-
 };
-
