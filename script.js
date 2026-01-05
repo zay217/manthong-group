@@ -1,30 +1,22 @@
-// ==========================================
-// Manthong Core Logic v9.5 - Secure Edition
-// ==========================================
-
-// 1. 安全配置：仓库名已改为 manthong-group
+// 1. GitHub 全局配置 (严格检查大小写)
 const GITHUB_CONFIG = {
-    // 关键：这里不写死 Token，防止 GitHub 报警注销
+    // 这里用大写的 TOKEN
     TOKEN: localStorage.getItem('MANTHONG_TOKEN'), 
     OWNER: 'zay217',
-    REPO: 'manthong-group', 
+    REPO: 'manthong-group', // 确认是 group
     PATH: 'data.json'
 };
 
+// 2. 这里的变量名也要对应
 const API_URL = `https://api.github.com/repos/${GITHUB_CONFIG.OWNER}/${GITHUB_CONFIG.REPO}/contents/${GITHUB_CONFIG.PATH}`;
 
-// 2. 核心：从 GitHub 获取数据
+// 3. 在 fetch 函数里修正 (注意把 .token 改成 .TOKEN)
 async function fetchFromCloud() {
-    if (!GITHUB_CONFIG.TOKEN) {
-        console.warn("未检测到 Token，请在 Console 设置。");
-        return JSON.parse(localStorage.getItem('cars')) || [];
-    }
-
+    if (!GITHUB_CONFIG.TOKEN) return []; 
     try {
         const response = await fetch(API_URL, {
-            headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+            headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` } // 修正为大写
         });
-        
         if (!response.ok) throw new Error("Cloud file not found");
         
         const data = await response.json();
@@ -95,3 +87,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ... 其余渲染逻辑 (renderUserInventory, renderAdminInventory, addNewCar 等) 保持不变 ...
+
